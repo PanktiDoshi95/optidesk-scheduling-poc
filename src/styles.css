@@ -1,42 +1,85 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-    font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  .gantt-shedule-timeline-calendar__chart-gantt-items-row-item-content {
-    padding: 0px 5px !important;
-    border-radius: 14px;
-  }
-  h1 {
-    font-size: 20px;
-    line-height: 20px;
-  }
+  font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-  table, td, th {  
-    border: 1px solid #ddd;
-    text-align: left;
-    font-weight: 100;
-  }
-  
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  th, td {
-    padding: 6px;
-  }
-  
-  
-  [data-title]:hover:after { 
-    visibility: visible !important; 
-} 
-  
- [data-title]:after { 
-    content: attr(data-title) !important; 
-    background-color: #4b9c2c !important;     
-    color: #ffffff !important; 
-    font-size: 150% !important; 
-    position: absolute !important; 
-    padding: 4px 8px 4px 8px !important; 
-    visibility: hidden; 
-} 
+.gantt-shedule-timeline-calendar__chart-gantt-items-row-item-content {
+  padding: 0px 5px !important;
+  border-radius: 14px;
+}
+
+h1 {
+  font-size: 20px;
+  line-height: 20px;
+}
+
+table,
+td,
+th {
+  border: 1px solid #ddd;
+  text-align: left;
+  font-weight: 100;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  padding: 6px;
+}
+
+/* Working on hover with attribute  */
+/* .gantt-schedule-timeline-calendar__chart-timeline-items-row{
+  overflow: visible !important;
+}
+
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item{
+  position: relative !important;
+  overflow: visible !important;
+}
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item:before {
+  content: attr(test);
+  display: none;
+}
+
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item:hover:before {
+  display: block;
+  width: 250px;
+  height: auto;
+  background: white;
+  color: black;
+  padding: 5px 10px;
+  position: absolute;
+  right: -275px;
+  top: 0;
+  box-shadow: 1px 3px 13px 4px rgba(153,153,153,0.75);
+  font-size: large;
+} */
+
+
+
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item{
+  overflow: visible !important;
+}
+
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item:hover p.event-test{
+  display: block;
+}
+
+p.event-test {
+  display: none;
+  position: absolute;
+  margin: 0;
+  background: #fff;
+  width: 250px;
+  color: #000;
+  top: 0;
+  right: -255px;
+  padding: 5px;
+  box-shadow: 1px 3px 13px 4px rgba(153,153,153,0.75);
+}
+
+

@@ -182,11 +182,13 @@ export class AppComponent implements OnInit {
     rows = {};
     items = {};
     taskChilds = {};
+    taskParents = {};
     tasks = [];
     displayChart = false;
     config: any;
     gstcState: any;
     groupBytaskId = {};
+    taskId: any;
 
     ngOnInit(): void {
         this.createSchedulingGroup();
@@ -228,18 +230,29 @@ export class AppComponent implements OnInit {
 
         const isEmptyRows = Object.keys(rowsCopy).length === 0;
         const isEmptyItems = Object.keys(itemsCopy).length === 0;
-
-        this.groupBytaskId[data.taskId].forEach(resource => {
-
+        this.taskId = data.taskId;
+        this.groupBytaskId[data.taskId].forEach((resource, index) => {
             rowsCopy[resource.resourceId] = {
                 id: resource.resourceId,
                 label: resource.resourceLabel,
-                parentId: resource.parentOperationId ? resource.parentOperationId : undefined,
+                // parentId: resource.parentOperationId ? resource.parentOperationId : undefined,
                 expanded: true,
                 progress: 50,
+                canSelect: true,
+                // style: {
+                //     current: index === 1 ? { background: 'gray', color: 'white', 'font-weight': 'bold' } : {},
+                //     children: index === 1 ? { background: 'lightgray' } : {},
+                //     grid: {
+                //       block: {
+                //         current: index === 1 ? { background: 'gray', color: 'white', 'font-weight': 'bold' } : {},
+                //         children: index === 1 ? { background: 'lightgray' } : {}
+                //       }
+                //     },
+                //   }
             };
 
-            const taskParent = rowsCopy[resource.resourceId].parentId;
+            // const taskParent = rowsCopy[resource.resourceId].parentId;
+            const taskParent = resource.parentOperationId;
             let taskStart = 0;
             let taskEnd = 0;
 
@@ -252,6 +265,21 @@ export class AppComponent implements OnInit {
                 taskEnd = parentEndTime + (resource.duration * 1000);
             }
 
+            const pallete = [
+                '#E74C3C',
+                '#DA3C78',
+                '#7E349D',
+                '#0077C0',
+                '#07ABA0',
+                '#0EAC51',
+                '#F1892D',
+                '#E3724B',
+                '#AE7C5B',
+                '#6C7A89',
+                '#758586',
+                '#707070'
+            ];
+
             itemsCopy[resource.id] = {
                 id: resource.id,
                 label: resource.label,
@@ -259,12 +287,21 @@ export class AppComponent implements OnInit {
                     start: taskStart ? taskStart : 0,
                     end: taskEnd ? taskEnd : 0
                 },
+                duration: resource.duration,
                 rowId: resource.resourceId,
+                parentTaskID: resource.parentTaskID,
+                style: { background: 'gray', color: 'white', },
             };
+
 
             this.taskChilds[resource.id] = [];
             if (resource.parentTaskID) {
                 this.taskChilds[resource.parentTaskID].push(resource.id);
+            }
+
+            this.taskParents[resource.id] = [];
+            if (resource.parentTaskID) {
+                this.taskParents[resource.id].push(resource.parentTaskID);
             }
 
             this.rows = JSON.parse(JSON.stringify(rowsCopy));
@@ -278,25 +315,31 @@ export class AppComponent implements OnInit {
             this.items = JSON.parse(JSON.stringify(itemsCopy));
         }
 
-        function addItemTitle(element, data) {
+        function addItemTitle(element, data, vido, props) {
             let innerHTML = element.innerHTML;
             return {
-                update(element, data) {
-                    // element.classList.add('example-class');
-                    element.title = data.item.label + ' - ' + 'Resourse : ' + data.row.label;
+                update(updateElement, updateData) {
+                    const toolElementArray = updateElement.querySelectorAll('p.event-test');
+                    if (toolElementArray.length === 0) {
+                        let htmlTitle = '<p class="event-test">';
+                        htmlTitle += '<span>Task : ' + updateData.item.label + '</span>';
+                        htmlTitle += '<span>Resourse : ' + updateData.row.label + '</span>';
+                        htmlTitle += '</p>';
+                        updateElement.innerHTML = updateElement.innerHTML + htmlTitle;
+                    }
 
-                    // const title = element.getAttribute('title');
-                    // title.style['background-color'] = 'green';
-                    // title.setAttribute('class', 'democlass');
-                    // console.log(element.getAttribute('class'));
+                    // const title = updateData.item.label + ' - ' + 'Resourse : ' + updateData.row.label;
+                    // updateElement.setAttribute('test', title);
 
-                    // element.title.setAttribute('style', 'background-color: yellow;');
-                    // element.setAttribute('style', 'background-color: red;');
-
-                    // innerHTML = innerHTML + '<a appHighlight data-title="GFG">Hi</a>';
-                    // element.innerHTML = innerHTML;
+                    // const para = document.createElement('P');
+                    // const text = document.createTextNode(htmlTitle);      // Create a text node
+                    // para.appendChild(text);
+                    // para.append(htmlTitle);
+                    // para.classList.add('event-test');
                 },
-                destroy(element, data) {
+                destroy(updateElement, updateData) {
+                    updateElement = '';
+                    updateData = '';
                     element.title = '';
                     innerHTML = '';
                 }
@@ -336,7 +379,8 @@ export class AppComponent implements OnInit {
                 ItemMovement({
                     moveable: true,
                     resizeable: false,
-                    collisionDetection: false
+                    collisionDetection: true,
+                    outOfBorders: true,
                 }),
                 CalendarScroll({
                     speed: 1,
@@ -346,15 +390,6 @@ export class AppComponent implements OnInit {
                     weekdays: [6, 0]
                 }),
                 Selection({
-                    events: {
-                        onSelecting(selecting, lastSelected) {
-                            const filtered = selecting;
-                            return filtered;
-                        },
-
-                        selected(data, type) {
-                        }
-                    }
                 })
             ],
             height: 800,
@@ -368,29 +403,22 @@ export class AppComponent implements OnInit {
             actions: {
                 'chart-timeline-items-row-item': [addItemTitle]
             },
-            slots: {
-                // 'chart-timeline-items-row-item': { inner: [itemSlot] },
-            },
         };
     }
 
     async removeTask(data) {
         const task: any = await this.removeOperationByTaskId(data.taskId);
-        console.log('task', task);
         // this.gstcState.update('config.list.rows', task.rowsCopy);
         // this.rows = JSON.parse(JSON.stringify(task.rowsCopy));
         // this.items = JSON.parse(JSON.stringify(task.itemsCopy));
-        console.log('state', this.gstcState);
     }
 
     removeOperationByTaskId(taskId) {
         return new Promise((resolve, reject) => {
             const totalOperation = this.groupBytaskId[taskId].length;
-            console.log('total', totalOperation);
             const rowsCopy = JSON.parse(JSON.stringify(this.rows));
             const itemsCopy = JSON.parse(JSON.stringify(this.items));
             this.groupBytaskId[taskId].reverse().forEach((operation, index) => {
-                console.log('operations', operation, 'index', index);
                 delete rowsCopy[operation.resourceId];
                 delete itemsCopy[operation.id];
                 this.gstcState.update('config.list.rows', rowsCopy);
@@ -404,7 +432,6 @@ export class AppComponent implements OnInit {
         });
     }
 
-
     onState(state) {
         this.gstcState = state;
         let itemsCopy = JSON.parse(JSON.stringify(this.items));
@@ -415,14 +442,21 @@ export class AppComponent implements OnInit {
                     const newItemObj = this.gstcState.get('config.chart.items.' + itemId);
                     const oldItemObj = this.items[itemId];
                     const timeDiff = newItemObj.time.start - oldItemObj.time.start;
-                    this.taskChilds[itemId].forEach(childTaskId => {
-                        const childItemObj = this.items[childTaskId];
-                        this.gstcState.update('config.chart.items.' + childTaskId + '.time.start', childItemObj.time.start + timeDiff);
-                        this.gstcState.update('config.chart.items.' + childTaskId + '.time.end', childItemObj.time.end + timeDiff);
-                    });
-                    itemsCopy = this.gstcState.get('config.chart.items');
-                    this.gstcState.update('config.chart.items', itemsCopy);
-                    this.items = JSON.parse(JSON.stringify(itemsCopy));
+                    const parentItemId = newItemObj.parentTaskID;
+                    const parentEndTime = this.gstcState.get('config.chart.items.' + parentItemId + '.time.end');
+                    if (parentEndTime === undefined || parentEndTime < newItemObj.time.start) {
+                        this.taskChilds[itemId].forEach(childTaskId => {
+                            const childItemObj = this.items[childTaskId];
+                            this.gstcState.update('config.chart.items.' + childTaskId + '.time.start', childItemObj.time.start + timeDiff);
+                            this.gstcState.update('config.chart.items.' + childTaskId + '.time.end', childItemObj.time.end + timeDiff);
+                        });
+                        itemsCopy = this.gstcState.get('config.chart.items');
+                        this.gstcState.update('config.chart.items', itemsCopy);
+                        this.items = JSON.parse(JSON.stringify(itemsCopy));
+                    } else {
+                        this.gstcState.update('config.chart.items.' + itemId + '.time.start', oldItemObj.time.start);
+                        this.gstcState.update('config.chart.items.' + itemId + '.time.end', oldItemObj.time.end);
+                    }
                 }
             },
             { bulk: true }
