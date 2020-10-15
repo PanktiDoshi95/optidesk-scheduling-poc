@@ -188,6 +188,7 @@ export class AppComponent implements OnInit {
     config: any;
     gstcState: any;
     groupBytaskId = {};
+    parentOperationOfTask = {};
     taskId: any;
 
     ngOnInit(): void {
@@ -202,6 +203,17 @@ export class AppComponent implements OnInit {
                 this.groupBytaskId[a.taskId] = [];
             }
             this.groupBytaskId[a.taskId].push(a);
+            if (!a.parentTaskID) {
+                this.parentOperationOfTask[a.taskId] = a.id;
+            }
+            this.rows[a.resourceId] = {
+                id: a.resourceId,
+                label: a.resourceLabel,
+                // parentId: resource.parentOperationId ? resource.parentOperationId : undefined,
+                expanded: true,
+                progress: 50,
+                canSelect: true
+            };
         });
     }
 
@@ -229,27 +241,16 @@ export class AppComponent implements OnInit {
         const itemsCopy = JSON.parse(JSON.stringify(this.items));
 
         const isEmptyRows = Object.keys(rowsCopy).length === 0;
-        const isEmptyItems = Object.keys(itemsCopy).length === 0;
         this.taskId = data.taskId;
         this.groupBytaskId[data.taskId].forEach((resource, index) => {
-            rowsCopy[resource.resourceId] = {
-                id: resource.resourceId,
-                label: resource.resourceLabel,
-                // parentId: resource.parentOperationId ? resource.parentOperationId : undefined,
-                expanded: true,
-                progress: 50,
-                canSelect: true,
-                // style: {
-                //     current: index === 1 ? { background: 'gray', color: 'white', 'font-weight': 'bold' } : {},
-                //     children: index === 1 ? { background: 'lightgray' } : {},
-                //     grid: {
-                //       block: {
-                //         current: index === 1 ? { background: 'gray', color: 'white', 'font-weight': 'bold' } : {},
-                //         children: index === 1 ? { background: 'lightgray' } : {}
-                //       }
-                //     },
-                //   }
-            };
+            // rowsCopy[resource.resourceId] = {
+            //     id: resource.resourceId,
+            //     label: resource.resourceLabel,
+            //     // parentId: resource.parentOperationId ? resource.parentOperationId : undefined,
+            //     expanded: true,
+            //     progress: 50,
+            //     canSelect: true
+            // };
 
             // const taskParent = rowsCopy[resource.resourceId].parentId;
             const taskParent = resource.parentOperationId;
@@ -265,21 +266,6 @@ export class AppComponent implements OnInit {
                 taskEnd = parentEndTime + (resource.duration * 1000);
             }
 
-            const pallete = [
-                '#E74C3C',
-                '#DA3C78',
-                '#7E349D',
-                '#0077C0',
-                '#07ABA0',
-                '#0EAC51',
-                '#F1892D',
-                '#E3724B',
-                '#AE7C5B',
-                '#6C7A89',
-                '#758586',
-                '#707070'
-            ];
-
             itemsCopy[resource.id] = {
                 id: resource.id,
                 label: resource.label,
@@ -290,6 +276,7 @@ export class AppComponent implements OnInit {
                 duration: resource.duration,
                 rowId: resource.resourceId,
                 parentTaskID: resource.parentTaskID,
+                index: index + 1,
                 style: { background: 'gray', color: 'white', },
             };
 
@@ -308,44 +295,46 @@ export class AppComponent implements OnInit {
             this.items = JSON.parse(JSON.stringify(itemsCopy));
         });
 
-        if (!isEmptyRows && !isEmptyItems) {
+        // if (!isEmptyRows && !isEmptyItems) {
+        if (this.gstcState) {
             this.gstcState.update('config.list.rows', rowsCopy);
             this.gstcState.update('config.chart.items', itemsCopy);
             this.rows = JSON.parse(JSON.stringify(rowsCopy));
             this.items = JSON.parse(JSON.stringify(itemsCopy));
         }
 
-        function addItemTitle(element, data, vido, props) {
-            let innerHTML = element.innerHTML;
+        function createSpan(spanText) {
+            const span = document.createElement('span');
+            span.textContent = spanText;
+            return span;
+        }
+
+        function addItemTitle(element, data) {
+            // element.title = data.item.label;
             return {
-                update(updateElement, updateData) {
-                    const toolElementArray = updateElement.querySelectorAll('p.event-test');
+                update(element, data) {
+                    const toolElementArray = element.querySelectorAll('p.event-test');
+                    let para;
                     if (toolElementArray.length === 0) {
-                        let htmlTitle = '<p class="event-test">';
-                        htmlTitle += '<span>Task : ' + updateData.item.label + '</span>';
-                        htmlTitle += '<span>Resourse : ' + updateData.row.label + '</span>';
-                        htmlTitle += '</p>';
-                        updateElement.innerHTML = updateElement.innerHTML + htmlTitle;
+                        para = document.createElement('P');
+                        element.append(para);
+                    } else {
+                        para = toolElementArray[0];
+                        para.innerHTML = '';
                     }
-
-                    // const title = updateData.item.label + ' - ' + 'Resourse : ' + updateData.row.label;
-                    // updateElement.setAttribute('test', title);
-
-                    // const para = document.createElement('P');
-                    // const text = document.createTextNode(htmlTitle);      // Create a text node
-                    // para.appendChild(text);
-                    // para.append(htmlTitle);
-                    // para.classList.add('event-test');
+                    para.appendChild(createSpan('Task : ' + data.item.label));
+                    para.appendChild(createSpan('Resourse : ' + data.row.label));
+                    para.classList.add('event-test');
+                    para.setAttribute('id', data.item.id);
                 },
-                destroy(updateElement, updateData) {
-                    updateElement = '';
-                    updateData = '';
+
+                destroy(element, data) {
+                    element.querySelector('p.event-test').innerHTML = '';
+                    element.innerHTML = '';
                     element.title = '';
-                    innerHTML = '';
                 }
             };
         }
-
         const columns = {
             percent: 100,
             resizer: {
@@ -362,14 +351,6 @@ export class AppComponent implements OnInit {
                     header: {
                         content: 'Resources'
                     }
-                },
-                progress: {
-                    id: 'progress',
-                    data: 'progress',
-                    width: 30,
-                    header: {
-                        content: '%'
-                    }
                 }
             }
         };
@@ -380,7 +361,7 @@ export class AppComponent implements OnInit {
                     moveable: true,
                     resizeable: false,
                     collisionDetection: true,
-                    outOfBorders: true,
+                    outOfBorders: true
                 }),
                 CalendarScroll({
                     speed: 1,
@@ -406,35 +387,26 @@ export class AppComponent implements OnInit {
         };
     }
 
-    async removeTask(data) {
-        const task: any = await this.removeOperationByTaskId(data.taskId);
-        // this.gstcState.update('config.list.rows', task.rowsCopy);
-        // this.rows = JSON.parse(JSON.stringify(task.rowsCopy));
-        // this.items = JSON.parse(JSON.stringify(task.itemsCopy));
+    removeTask(data) {
+        const itemsCopy = JSON.parse(JSON.stringify(this.items));
+        const rowsCopy = JSON.parse(JSON.stringify(this.rows));
+        const parentOperationId = this.parentOperationOfTask[data.taskId];
+        const remainingItems = this.removeOperation(parentOperationId, itemsCopy);
+        this.items = JSON.parse(JSON.stringify(remainingItems));
     }
 
-    removeOperationByTaskId(taskId) {
-        return new Promise((resolve, reject) => {
-            const totalOperation = this.groupBytaskId[taskId].length;
-            const rowsCopy = JSON.parse(JSON.stringify(this.rows));
-            const itemsCopy = JSON.parse(JSON.stringify(this.items));
-            this.groupBytaskId[taskId].reverse().forEach((operation, index) => {
-                delete rowsCopy[operation.resourceId];
-                delete itemsCopy[operation.id];
-                this.gstcState.update('config.list.rows', rowsCopy);
-                this.gstcState.update('config.chart.items', itemsCopy);
-                this.rows = JSON.parse(JSON.stringify(rowsCopy));
-                this.items = JSON.parse(JSON.stringify(itemsCopy));
-                if (totalOperation - 1 === index) {
-                    resolve({ rowsCopy, itemsCopy });
-                }
-            });
-        });
+    removeOperation(operationId, items) {
+        for (const childTaskId of this.taskChilds[operationId]) {
+            this.removeOperation(childTaskId, items);
+        }
+        delete items[operationId];
+        this.gstcState.update('config.chart.items', items);
+        return items;
     }
 
     onState(state) {
         this.gstcState = state;
-        let itemsCopy = JSON.parse(JSON.stringify(this.items));
+
         this.gstcState.subscribe('config.chart.items.:id',
             (bulk, eventInfo) => {
                 if (eventInfo.type === 'update' && eventInfo.params.id) {
@@ -444,22 +416,39 @@ export class AppComponent implements OnInit {
                     const timeDiff = newItemObj.time.start - oldItemObj.time.start;
                     const parentItemId = newItemObj.parentTaskID;
                     const parentEndTime = this.gstcState.get('config.chart.items.' + parentItemId + '.time.end');
-                    if (parentEndTime === undefined || parentEndTime < newItemObj.time.start) {
-                        this.taskChilds[itemId].forEach(childTaskId => {
-                            const childItemObj = this.items[childTaskId];
-                            this.gstcState.update('config.chart.items.' + childTaskId + '.time.start', childItemObj.time.start + timeDiff);
-                            this.gstcState.update('config.chart.items.' + childTaskId + '.time.end', childItemObj.time.end + timeDiff);
-                        });
-                        itemsCopy = this.gstcState.get('config.chart.items');
+                    const copyItems = JSON.parse(JSON.stringify(this.items));
+
+                    // prevent backword movement of task
+                    if (parentItemId === undefined || newItemObj.time.start > parentEndTime) {
+                        copyItems[itemId] = newItemObj;
+                        const itemsCopy = this.onChange(itemId, copyItems, timeDiff);
                         this.gstcState.update('config.chart.items', itemsCopy);
                         this.items = JSON.parse(JSON.stringify(itemsCopy));
                     } else {
-                        this.gstcState.update('config.chart.items.' + itemId + '.time.start', oldItemObj.time.start);
-                        this.gstcState.update('config.chart.items.' + itemId + '.time.end', oldItemObj.time.end);
+                        this.gstcState.update('config.chart.items.' + itemId + '.time.start', copyItems[itemId].time.start);
+                        this.gstcState.update('config.chart.items.' + itemId + '.time.end', copyItems[itemId].time.end);
                     }
                 }
             },
             { bulk: true }
         );
+    }
+
+    onChange(itemId, items, timeDiff) {
+        if (this.taskChilds[itemId].length > 0) {
+            let i = 0;
+            for (const childTaskId of this.taskChilds[itemId]) {
+                const childItemObj = items[childTaskId];
+                childItemObj.time.start += timeDiff;
+                childItemObj.time.end += timeDiff;
+                items = this.onChange(childTaskId, items, timeDiff);
+                i++;
+                if (i === this.taskChilds[itemId].length) {
+                    return items;
+                }
+            }
+        } else {
+            return items;
+        }
     }
 }

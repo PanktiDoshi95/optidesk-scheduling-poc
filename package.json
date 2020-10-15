@@ -19,7 +19,7 @@
     "@angular/platform-browser": "~8.2.9",
     "@angular/platform-browser-dynamic": "~8.2.9",
     "@angular/router": "~8.2.9",
-    "angular-gantt-schedule-timeline-calendar": "^1.1.0",
+    "angular-gantt-schedule-timeline-calendar": "1.1.0",
     "bootstrap": "^4.5.2",
     "rxjs": "~6.4.0",
     "tslib": "^1.10.0",

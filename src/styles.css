@@ -1,34 +1,34 @@
 /* You can add global styles to this file, and also import other style files */
 body {
-  font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Roboto, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .gantt-shedule-timeline-calendar__chart-gantt-items-row-item-content {
-  padding: 0px 5px !important;
-  border-radius: 14px;
+    padding: 0px 5px !important;
+    border-radius: 14px;
 }
 
 h1 {
-  font-size: 20px;
-  line-height: 20px;
+    font-size: 20px;
+    line-height: 20px;
 }
 
 table,
 td,
 th {
-  border: 1px solid #ddd;
-  text-align: left;
-  font-weight: 100;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-weight: 100;
 }
 
 table {
-  border-collapse: collapse;
-  width: 100%;
+    border-collapse: collapse;
+    width: 100%;
 }
 
 th,
 td {
-  padding: 6px;
+    padding: 6px;
 }
 
 /* Working on hover with attribute  */
@@ -61,25 +61,41 @@ td {
 
 
 
-.gantt-schedule-timeline-calendar__chart-timeline-items-row-item{
-  overflow: visible !important;
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item {
+    overflow: visible !important;
 }
 
-.gantt-schedule-timeline-calendar__chart-timeline-items-row-item:hover p.event-test{
-  display: block;
+.gantt-schedule-timeline-calendar__chart-timeline-items-row-item:hover p.event-test {
+    display: block;
 }
 
 p.event-test {
-  display: none;
-  position: absolute;
-  margin: 0;
-  background: #fff;
-  width: 250px;
-  color: #000;
-  top: 0;
-  right: -255px;
-  padding: 5px;
-  box-shadow: 1px 3px 13px 4px rgba(153,153,153,0.75);
+    display: none;
+    position: absolute;
+    margin: 0;
+    background: #fff;
+    width: 250px;
+    color: #000;
+    top: 0;
+    right: -258px;
+    padding: 5px;
+    box-shadow: 1px 3px 13px 4px rgba(153, 153, 153, 0.75);
 }
 
+p.event-test:before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    position: absolute;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 8px solid #fff;
+    left: -8px;
+    top: 7px;
+  }
 
+p.event-test span {
+    display: inline-block;
+    width: 100%;
+}
