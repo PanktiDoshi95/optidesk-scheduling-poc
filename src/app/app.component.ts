@@ -182,8 +182,6 @@ export class AppComponent implements OnInit {
     rows = {};
     items = {};
     taskChilds = {};
-    taskParents = {};
-    tasks = [];
     displayChart = false;
     config: any;
     gstcState: any;
@@ -286,11 +284,6 @@ export class AppComponent implements OnInit {
                 this.taskChilds[resource.parentTaskID].push(resource.id);
             }
 
-            this.taskParents[resource.id] = [];
-            if (resource.parentTaskID) {
-                this.taskParents[resource.id].push(resource.parentTaskID);
-            }
-
             this.rows = JSON.parse(JSON.stringify(rowsCopy));
             this.items = JSON.parse(JSON.stringify(itemsCopy));
         });
@@ -389,7 +382,6 @@ export class AppComponent implements OnInit {
 
     removeTask(data) {
         const itemsCopy = JSON.parse(JSON.stringify(this.items));
-        const rowsCopy = JSON.parse(JSON.stringify(this.rows));
         const parentOperationId = this.parentOperationOfTask[data.taskId];
         const remainingItems = this.removeOperation(parentOperationId, itemsCopy);
         this.items = JSON.parse(JSON.stringify(remainingItems));
